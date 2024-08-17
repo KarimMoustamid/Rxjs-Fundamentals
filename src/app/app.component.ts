@@ -1,6 +1,7 @@
 import 'zone.js/dist/zone';  // Required for Stackblitz
 import { Component } from '@angular/core';
 import { RouterLinkActive, RouterLink, RouterOutlet } from '@angular/router';
+import {Observable, of} from "rxjs";
 
 @Component({
   selector: 'pm-root',
@@ -14,5 +15,4 @@ export class AppComponent {
   pageTitle = 'Acme Product Management';
 
   cartCount = 0;
-
 }
