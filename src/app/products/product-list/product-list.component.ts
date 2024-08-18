@@ -14,7 +14,7 @@ import {catchError, EMPTY, Subscription, tap} from 'rxjs';
 })
 export class ProductListComponent {
   pageTitle = 'Products';
- errorMessage = '';
+  errorMessage = '';
 
   private productService = inject(ProductService);
 
@@ -28,9 +28,9 @@ export class ProductListComponent {
     );
 
   // Selected product id to highlight the entry
-  selectedProductId: number = 0;
+  readonly  productSelectedId$ = this.productService.productSelected$;
 
   onSelected(productId: number): void {
-    this.selectedProductId = productId;
+    this.productService.productSelected(productId);
   }
 }

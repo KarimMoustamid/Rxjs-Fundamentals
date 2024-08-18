@@ -1,6 +1,18 @@
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {Injectable, inject} from '@angular/core';
-import {catchError, concatMap, map, mergeMap, Observable, of, shareReplay, switchMap, tap, throwError} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  concatMap,
+  map,
+  mergeMap,
+  Observable,
+  of,
+  shareReplay,
+  switchMap,
+  tap,
+  throwError
+} from 'rxjs';
 import {Product} from './product';
 import {ProductData} from "./product-data";
 import {HttpErrorService} from "../utilities/http-error.service";
@@ -17,6 +29,10 @@ export class ProductService {
   private http = inject(HttpClient);
   private reviewService = inject(ReviewService);
   private errorService = inject(HttpErrorService);
+
+  private productSelectedSubject = new BehaviorSubject<number | undefined>(undefined);
+  readonly productSelected$ = this.productSelectedSubject.asObservable();
+
 
  readonly products$  = this.http.get<Product[]>(this.productsUrl)
    .pipe(
@@ -55,4 +71,7 @@ export class ProductService {
     return throwError(() => formattedMassage);
   }
 
+  productSelected(selectedProductId: number) {
+    this.productSelectedSubject.next(selectedProductId);
+  }
 }
