@@ -31,6 +31,7 @@ export class ProductListComponent {
   readonly  productSelectedId$ = this.productService.productSelected$;
 
   onSelected(productId: number): void {
+    console.log("you selected a product with id = " + productId + ", let call the service")
     this.productService.productSelected(productId);
   }
 }

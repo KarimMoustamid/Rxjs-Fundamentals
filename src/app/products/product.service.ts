@@ -1,9 +1,9 @@
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
-import {Injectable, inject} from '@angular/core';
+import {Injectable, inject, APP_BOOTSTRAP_LISTENER} from '@angular/core';
 import {
   BehaviorSubject,
-  catchError,
-  concatMap,
+  catchError, combineLatest,
+  concatMap, filter,
   map,
   mergeMap,
   Observable,
@@ -34,31 +34,32 @@ export class ProductService {
   readonly productSelected$ = this.productSelectedSubject.asObservable();
 
 
- readonly products$  = this.http.get<Product[]>(this.productsUrl)
-   .pipe(
-     tap(() => console.log('In http.get pipeline')),
-     tap((p) => console.log("In http.get pipeline",JSON.stringify(p))),
-     shareReplay(1),
-     catchError(err => this.handleError(err))
-   );
+  readonly products$ = this.http.get<Product[]>(this.productsUrl)
+    .pipe(
+      tap(() => console.log('In http.get pipeline')),
+      tap((p) => console.log("In http.get pipeline", JSON.stringify(p))),
+      shareReplay(1),
+      catchError(err => this.handleError(err))
+    );
 
-  getProduct(id: number): Observable<Product> {
-    const productUrl = this.productsUrl + '/' + id;
-    return this.http.get<Product>(productUrl)
-      .pipe(
-        tap((p) => console.log('In http.get by id pipeline',p)),
-        switchMap(product => this.getProductWithReviews(product)),
-        tap((p) => console.log('In http.get after getProductWithReviews was called in the pipeline', p)),
-        catchError(err =>
-          this.handleError(err)),
-      );
-  }
+  readonly product$ = combineLatest([
+    this.productSelected$,
+    this.products$
+  ]).pipe(
+    map(([selectedProductId, products]) =>
+    products.find(product => product.id === selectedProductId)),
+    filter(Boolean),
+    switchMap(product => this.getProductWithReviews(product)),
+    tap((p) => console.log('In http.get after getProductWithReviews was called in the pipeline', p)),
+    catchError(err =>
+      this.handleError(err)),
+  );
 
-  private getProductWithReviews(product : Product) : Observable<Product>{
-    if(product.hasReviews){
+  private getProductWithReviews(product: Product): Observable<Product> {
+    if (product.hasReviews) {
       return this.http.get<Review[]>(this.reviewService.getReviewUrl(product.id)).pipe(
         tap(() => console.log('In getProductWithReviews pipeline')),
-        map( reviews => ({...product, reviews} as Product))
+        map(reviews => ({...product, reviews} as Product))
       );
     } else {
       console.log("this product has no reviews !")
